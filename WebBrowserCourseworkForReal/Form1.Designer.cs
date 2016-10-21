@@ -31,13 +31,17 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setAsHomePageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editHomeURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.navigateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goForwardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goBackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.goHomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.clearHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addBookmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.editBookmarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.myBookmarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.textBoxURL = new System.Windows.Forms.TextBox();
@@ -46,9 +50,10 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.richTextBoxHome = new System.Windows.Forms.RichTextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonAddTab = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.labelStatusCode = new System.Windows.Forms.Label();
+            this.helpProvider1 = new System.Windows.Forms.HelpProvider();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -71,7 +76,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.setAsHomePageToolStripMenuItem,
-            this.quitToolStripMenuItem});
+            this.editHomeURLToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(62, 24);
             this.fileToolStripMenuItem.Text = "Home";
@@ -83,18 +88,21 @@
             this.setAsHomePageToolStripMenuItem.Text = "Set URL As Home";
             this.setAsHomePageToolStripMenuItem.Click += new System.EventHandler(this.setAsHomePageToolStripMenuItem_Click);
             // 
-            // quitToolStripMenuItem
+            // editHomeURLToolStripMenuItem
             // 
-            this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(206, 26);
-            this.quitToolStripMenuItem.Text = "Quit";
+            this.editHomeURLToolStripMenuItem.Name = "editHomeURLToolStripMenuItem";
+            this.editHomeURLToolStripMenuItem.Size = new System.Drawing.Size(200, 26);
+            this.editHomeURLToolStripMenuItem.Text = "Edit Home URL";
             // 
             // navigateToolStripMenuItem
             // 
             this.navigateToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.goForwardToolStripMenuItem,
             this.goBackToolStripMenuItem,
-            this.goHomeToolStripMenuItem});
+            this.toolStripSeparator2,
+            this.goHomeToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.clearHistoryToolStripMenuItem});
             this.navigateToolStripMenuItem.Name = "navigateToolStripMenuItem";
             this.navigateToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
             this.navigateToolStripMenuItem.Text = "Navigate";
@@ -102,25 +110,46 @@
             // goForwardToolStripMenuItem
             // 
             this.goForwardToolStripMenuItem.Name = "goForwardToolStripMenuItem";
-            this.goForwardToolStripMenuItem.Size = new System.Drawing.Size(161, 26);
+            this.goForwardToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.goForwardToolStripMenuItem.Text = "Go Forward";
+            this.goForwardToolStripMenuItem.Click += new System.EventHandler(this.goForwardToolStripMenuItem_Click);
             // 
             // goBackToolStripMenuItem
             // 
             this.goBackToolStripMenuItem.Name = "goBackToolStripMenuItem";
-            this.goBackToolStripMenuItem.Size = new System.Drawing.Size(161, 26);
+            this.goBackToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.goBackToolStripMenuItem.Text = "Go Back";
+            this.goBackToolStripMenuItem.Click += new System.EventHandler(this.goBackToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(178, 6);
             // 
             // goHomeToolStripMenuItem
             // 
             this.goHomeToolStripMenuItem.Name = "goHomeToolStripMenuItem";
-            this.goHomeToolStripMenuItem.Size = new System.Drawing.Size(161, 26);
+            this.goHomeToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.goHomeToolStripMenuItem.Text = "Go Home";
+            this.goHomeToolStripMenuItem.Click += new System.EventHandler(this.goHomeToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(178, 6);
+            // 
+            // clearHistoryToolStripMenuItem
+            // 
+            this.clearHistoryToolStripMenuItem.Name = "clearHistoryToolStripMenuItem";
+            this.clearHistoryToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.clearHistoryToolStripMenuItem.Text = "Clear History";
+            this.clearHistoryToolStripMenuItem.Click += new System.EventHandler(this.clearHistoryToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addBookmarkToolStripMenuItem,
+            this.toolStripSeparator3,
             this.editBookmarksToolStripMenuItem,
             this.myBookmarksToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
@@ -131,19 +160,24 @@
             // addBookmarkToolStripMenuItem
             // 
             this.addBookmarkToolStripMenuItem.Name = "addBookmarkToolStripMenuItem";
-            this.addBookmarkToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
-            this.addBookmarkToolStripMenuItem.Text = "Bookmark Current Page";
+            this.addBookmarkToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
+            this.addBookmarkToolStripMenuItem.Text = "Bookmark Current URL";
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(230, 6);
             // 
             // editBookmarksToolStripMenuItem
             // 
             this.editBookmarksToolStripMenuItem.Name = "editBookmarksToolStripMenuItem";
-            this.editBookmarksToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
+            this.editBookmarksToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
             this.editBookmarksToolStripMenuItem.Text = "Edit Bookmarks";
             // 
             // myBookmarksToolStripMenuItem
             // 
             this.myBookmarksToolStripMenuItem.Name = "myBookmarksToolStripMenuItem";
-            this.myBookmarksToolStripMenuItem.Size = new System.Drawing.Size(239, 26);
+            this.myBookmarksToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
             this.myBookmarksToolStripMenuItem.Text = "My Bookmarks";
             // 
             // textBoxURL
@@ -200,17 +234,16 @@
             this.richTextBoxHome.Size = new System.Drawing.Size(1179, 646);
             this.richTextBoxHome.TabIndex = 0;
             this.richTextBoxHome.Text = "";
-            this.richTextBoxHome.TextChanged += new System.EventHandler(this.richTextBox1_TextChanged_1);
             // 
-            // button1
+            // buttonAddTab
             // 
-            this.button1.Location = new System.Drawing.Point(1024, 6);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Add Tab";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            this.buttonAddTab.Location = new System.Drawing.Point(1024, 6);
+            this.buttonAddTab.Name = "buttonAddTab";
+            this.buttonAddTab.Size = new System.Drawing.Size(75, 23);
+            this.buttonAddTab.TabIndex = 0;
+            this.buttonAddTab.Text = "Add Tab";
+            this.buttonAddTab.UseVisualStyleBackColor = true;
+            this.buttonAddTab.Click += new System.EventHandler(this.buttonAddTab_click);
             // 
             // button2
             // 
@@ -231,7 +264,6 @@
             this.labelStatusCode.Size = new System.Drawing.Size(23, 17);
             this.labelStatusCode.TabIndex = 6;
             this.labelStatusCode.Text = "---";
-            this.labelStatusCode.Click += new System.EventHandler(this.label2_Click);
             // 
             // Form1
             // 
@@ -240,7 +272,7 @@
             this.ClientSize = new System.Drawing.Size(1202, 718);
             this.Controls.Add(this.labelStatusCode);
             this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonAddTab);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.buttonGO);
             this.Controls.Add(this.label1);
@@ -264,7 +296,6 @@
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem quitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem navigateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem goForwardToolStripMenuItem;
@@ -279,10 +310,16 @@
         private System.Windows.Forms.ToolStripMenuItem setAsHomePageToolStripMenuItem;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonAddTab;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.RichTextBox richTextBoxHome;
         private System.Windows.Forms.Label labelStatusCode;
+        private System.Windows.Forms.ToolStripMenuItem clearHistoryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editHomeURLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.HelpProvider helpProvider1;
     }
 }
 
