@@ -56,8 +56,28 @@ namespace WebBrowserCourseworkForReal
             bool isUri = Uri.TryCreate(textBoxURL.Text, UriKind.Absolute, out uriResult)
                 && uriResult.Scheme == Uri.UriSchemeHttp;
 
+            RichTextBox selectedRichTextBox;
+
             // Get the 0th control (it is suppose to be richTextBox) of the current Tab
-            RichTextBox selectedRichTextBox = (RichTextBox)tabControl1.SelectedTab.Controls[0];
+            if(tabControl1.TabCount > 0)
+            {
+                if (tabControl1.SelectedTab.Controls[0] is RichTextBox)
+                {
+                    selectedRichTextBox = (RichTextBox)tabControl1.SelectedTab.Controls[0];
+                }
+                else
+                {
+                    MessageBox.Show("Please use a different tab");
+                    return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please add a new tab");
+                return;
+            }
+
+
 
             // Do Request if valid URI
             if (isUri)
@@ -194,17 +214,22 @@ namespace WebBrowserCourseworkForReal
 
         private void buttonAddTab_click(object sender, EventArgs e)
         {
-            string title = "TabPage " + (tabControl1.TabCount + 1).ToString();
+            addWebPageTab(userdata.hompage, false);
+        }
+
+        private void addWebPageTab(string url, Boolean record)
+        {
+            string title = url;
             RichTextBox richTextBoxTab = new RichTextBox();
             richTextBoxTab.Location = new System.Drawing.Point(0, 0);
-            richTextBoxTab.Name = "richTextBoxTab"+(tabControl1.TabCount + 1).ToString();
+            richTextBoxTab.Name = "richTextBoxTab" + (tabControl1.TabCount + 1).ToString();
             richTextBoxTab.Size = new System.Drawing.Size(1179, 646);
             TabPage newTabPage = new TabPage(title);
             tabControl1.TabPages.Add(newTabPage);
             newTabPage.Controls.Add(richTextBoxTab);
             tabControl1.SelectedTab = newTabPage;
-            textBoxURL.Text = userdata.homepage;
-            loadResponseToTextBoxFromURL(false);
+            textBoxURL.Text = url;
+            loadResponseToTextBoxFromURL(record);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -254,6 +279,39 @@ namespace WebBrowserCourseworkForReal
         {
             textBoxURL.Text = userdata.homepage;
             loadResponseToTextBoxFromURL(true);
+        }
+
+        private void viewHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Setup tab page
+            string title = "History";
+            TabPage newTabPage = new TabPage(title);
+            tabControl1.TabPages.Add(newTabPage);
+
+            // Set up view control
+            ListView listViewHistory = new ListView();
+            listViewHistory.Location = new System.Drawing.Point(-4, 0);
+            listViewHistory.Name = "listViewHistory";
+            listViewHistory.Size = new System.Drawing.Size(1174, 646);
+            listViewHistory.UseCompatibleStateImageBehavior = false;
+            listViewHistory.View = View.List;
+            listViewHistory.ItemSelectionChanged += listViewHistory_ItemSelectionChanged;
+
+            // Load data to list view
+            foreach (string item in userdata.history)
+            {
+                listViewHistory.Items.Add(item);
+            }
+
+            // Add control to tabpage
+            newTabPage.Controls.Add(listViewHistory);
+            tabControl1.SelectedTab = newTabPage;
+        }
+
+        private void listViewHistory_ItemSelectionChanged(Object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            textBoxURL.Text = e.Item.Text;
+            addWebPageTab(textBoxURL.Text, false);
         }
     }
 }

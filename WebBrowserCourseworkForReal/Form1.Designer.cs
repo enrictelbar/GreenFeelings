@@ -54,6 +54,8 @@
             this.button2 = new System.Windows.Forms.Button();
             this.labelStatusCode = new System.Windows.Forms.Label();
             this.helpProvider1 = new System.Windows.Forms.HelpProvider();
+            this.viewHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -102,6 +104,8 @@
             this.toolStripSeparator2,
             this.goHomeToolStripMenuItem,
             this.toolStripSeparator1,
+            this.viewHistoryToolStripMenuItem,
+            this.toolStripSeparator4,
             this.clearHistoryToolStripMenuItem});
             this.navigateToolStripMenuItem.Name = "navigateToolStripMenuItem";
             this.navigateToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
@@ -265,6 +269,18 @@
             this.labelStatusCode.TabIndex = 6;
             this.labelStatusCode.Text = "---";
             // 
+            // viewHistoryToolStripMenuItem
+            // 
+            this.viewHistoryToolStripMenuItem.Name = "viewHistoryToolStripMenuItem";
+            this.viewHistoryToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.viewHistoryToolStripMenuItem.Text = "View History";
+            this.viewHistoryToolStripMenuItem.Click += new System.EventHandler(this.viewHistoryToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(178, 6);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -320,6 +336,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.HelpProvider helpProvider1;
+        private System.Windows.Forms.ToolStripMenuItem viewHistoryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 
