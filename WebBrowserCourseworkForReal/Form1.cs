@@ -49,7 +49,7 @@ namespace WebBrowserCourseworkForReal
 
         }
 
-        private void loadResponseToTextBoxFromURL(bool recordToHistory)
+        private async void loadResponseToTextBoxFromURL(bool recordToHistory)
         {
             // Check if valid URI
             Uri uriResult;
@@ -59,7 +59,7 @@ namespace WebBrowserCourseworkForReal
             RichTextBox selectedRichTextBox;
 
             // Get the 0th control (it is suppose to be richTextBox) of the current Tab
-            if(tabControl1.TabCount > 0)
+            if (tabControl1.TabCount > 0)
             {
                 if (tabControl1.SelectedTab.Controls[0] is RichTextBox)
                 {
@@ -67,24 +67,27 @@ namespace WebBrowserCourseworkForReal
                 }
                 else
                 {
+                    // If no rich text box is present
                     MessageBox.Show("Please use a different tab");
                     return;
                 }
             }
             else
             {
+                // If no rich text box is present
                 MessageBox.Show("Please add a new tab");
                 return;
             }
-
-
 
             // Do Request if valid URI
             if (isUri)
             {
 
                 // Set up request object
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(textBoxURL.Text);
+                var request = WebRequest.Create(textBoxURL.Text);
+                // HttpWebRequest request = (HttpWebRequest)WebRequest.Create(textBoxURL.Text);
+
+                selectedRichTextBox.Text = "Loading...";
 
                 HttpStatusCode responseStatusCode;
 
@@ -95,7 +98,8 @@ namespace WebBrowserCourseworkForReal
                     tabControl1.SelectedTab.Text = textBoxURL.Text;
 
                     // Setup response object
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    var response = (HttpWebResponse)await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null);
+                    //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
                     // Get the stream associated with the response.
                     Stream receiveStream = response.GetResponseStream();
@@ -117,10 +121,10 @@ namespace WebBrowserCourseworkForReal
                     // Record history
                     if (recordToHistory)
                     {
-                        if(userPosition != userdata.history.Count - 1 || userPosition != 0)
+                        if (userPosition != userdata.history.Count - 1 || userPosition != 0)
                         {
                             int j = userdata.history.Count;
-                            for(int i = userdata.history.Count-1; i > userPosition; i--)
+                            for (int i = userdata.history.Count - 1; i > userPosition; i--)
                             {
                                 userdata.history[i].Remove();
                             }
@@ -209,25 +213,34 @@ namespace WebBrowserCourseworkForReal
         private void setAsHomePageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             userdata["homepage"] = textBoxURL.Text;
-            Console.WriteLine("Homepage updated to " + userdata["homepage"]);
+            MessageBox.Show("Home page has been set to " + userdata["homepage"]);
         }
 
         private void buttonAddTab_click(object sender, EventArgs e)
         {
-            addWebPageTab(userdata.hompage, false);
+            addWebPageTab(userdata.homepage.ToString(), false);
         }
 
-        private void addWebPageTab(string url, Boolean record)
+        private void addWebPageTab(string url, Boolean record, Boolean autoNav = true)
         {
+            // Set the title
             string title = url;
+
+            // Set up rich text box
             RichTextBox richTextBoxTab = new RichTextBox();
             richTextBoxTab.Location = new System.Drawing.Point(0, 0);
             richTextBoxTab.Name = "richTextBoxTab" + (tabControl1.TabCount + 1).ToString();
             richTextBoxTab.Size = new System.Drawing.Size(1179, 646);
+
+            // Add new tab
             TabPage newTabPage = new TabPage(title);
             tabControl1.TabPages.Add(newTabPage);
+
+            // Add controller
             newTabPage.Controls.Add(richTextBoxTab);
             tabControl1.SelectedTab = newTabPage;
+
+            // Auto-Navigate to url
             textBoxURL.Text = url;
             loadResponseToTextBoxFromURL(record);
         }
@@ -283,6 +296,16 @@ namespace WebBrowserCourseworkForReal
 
         private void viewHistoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Check if history is already open
+            foreach (TabPage tabpage in tabControl1.TabPages)
+            {
+                if (tabpage.Text == "History")
+                {
+                    MessageBox.Show("A History tab is already open");
+                    return;
+                }
+            }
+
             // Setup tab page
             string title = "History";
             TabPage newTabPage = new TabPage(title);
@@ -295,7 +318,7 @@ namespace WebBrowserCourseworkForReal
             listViewHistory.Size = new System.Drawing.Size(1174, 646);
             listViewHistory.UseCompatibleStateImageBehavior = false;
             listViewHistory.View = View.List;
-            listViewHistory.ItemSelectionChanged += listViewHistory_ItemSelectionChanged;
+            listViewHistory.ItemActivate += listViewHistory_ItemClick;
 
             // Load data to list view
             foreach (string item in userdata.history)
@@ -308,10 +331,166 @@ namespace WebBrowserCourseworkForReal
             tabControl1.SelectedTab = newTabPage;
         }
 
-        private void listViewHistory_ItemSelectionChanged(Object sender, ListViewItemSelectionChangedEventArgs e)
+        private void listViewHistory_ItemClick(Object sender, EventArgs e)
         {
-            textBoxURL.Text = e.Item.Text;
+            ListView listView = (ListView)sender;
+            textBoxURL.Text = listView.SelectedItems[0].Text;
             addWebPageTab(textBoxURL.Text, false);
+        }
+
+        private void addBookmarkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            userdata.bookmarks.Add(showBookmarkEditDialog(textBoxURL.Text, "Add new bookmark"));
+        }
+
+        private void myBookmarksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Check if bookmarks is already open
+            foreach (TabPage tabpage in tabControl1.TabPages)
+            {
+                if(tabpage.Text == "Bookmarks")
+                {
+                    MessageBox.Show("A Bookmarks tab is already open");
+                    return;
+                }
+            }
+
+            // Setup tab page
+            string title = "Bookmarks";
+            TabPage newTabPage = new TabPage(title);
+            tabControl1.TabPages.Add(newTabPage);
+
+            // Set up view control
+            ListView listViewBookmarks = new ListView();
+            listViewBookmarks.Location = new System.Drawing.Point(-4, 0);
+            listViewBookmarks.Name = "listViewBookmarks";
+            listViewBookmarks.Size = new System.Drawing.Size(400, 620);
+            listViewBookmarks.UseCompatibleStateImageBehavior = false;
+            listViewBookmarks.View = View.Details;
+            listViewBookmarks.ItemActivate += listViewBookmarks_ItemClick;
+            listViewBookmarks.Columns.Add("Name", 200);
+            listViewBookmarks.Columns.Add("URL", 200);
+            newTabPage.Controls.Add(listViewBookmarks);
+
+            int itemTop = 20;
+            int itemIndex = 0;
+
+            // Load data to list view
+            foreach (dynamic item in userdata.bookmarks)
+            {
+                ListViewItem listItem = new ListViewItem((string)item.name);
+                listItem.SubItems.Add((string)item.url);
+                Button itemEditButton = new Button() { Text = "Edit Item "+itemIndex, Left = 400, Width = 100, Height = 20, Top = itemTop };
+                itemEditButton.Click += bookmarkItemEdit_Click;
+                Button itemRemoveButton = new Button() { Text = "Remove Item "+itemIndex, Left = 500, Width = 100, Height = 20, Top = itemTop };
+                itemRemoveButton.Click += bookmarkItemRemove_Click;
+                itemTop += 20;
+                itemIndex++;
+                newTabPage.Controls.Add(itemEditButton);
+                newTabPage.Controls.Add(itemRemoveButton);
+                listViewBookmarks.Items.Add(listItem);
+            }
+
+            // Add control to tabpage
+            tabControl1.SelectedTab = newTabPage;
+        }
+
+        private void bookmarkItemEdit_Click(Object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            int itemIndex = Int32.Parse(button.Text.Substring(button.Text.Length-1));
+            userdata.bookmarks[itemIndex] = showBookmarkEditDialog((string)userdata.bookmarks[itemIndex].url,"Edit Bookmark",(string)userdata.bookmarks[itemIndex].name);
+            button2.PerformClick();
+            myBookmarksToolStripMenuItem.PerformClick();
+        }
+
+        private void bookmarkItemRemove_Click(Object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            int itemIndex = Int32.Parse(button.Text.Substring(button.Text.Length - 1));
+            userdata.bookmarks.RemoveAt(itemIndex);
+            button2.PerformClick();
+            myBookmarksToolStripMenuItem.PerformClick();
+        }
+
+        private void listViewBookmarks_ItemClick(Object sender, EventArgs e)
+        {
+            ListView listView = (ListView)sender;
+            textBoxURL.Text = listView.SelectedItems[0].SubItems[1].Text;
+            addWebPageTab(textBoxURL.Text, false);
+        }
+
+        private void editHomeURLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            userdata.homepage = ShowEditDialog((string)userdata.homepage, "Edit Homepage");
+        }
+
+        public static string ShowEditDialog(string text, string caption)
+        {
+
+            // Setup dialog box
+            Form prompt = new Form();
+            prompt.Width = 500;
+            prompt.Height = 200;
+            prompt.Text = caption;
+            Label textLabel = new Label() { Left = 50, Top = 20, Text = caption };
+            TextBox inputBox = new TextBox() { Left = 50, Top = 50, Width = 400 };
+            inputBox.Text = text;
+            Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70 };
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.Controls.Add(inputBox);
+            prompt.ShowDialog();
+            return inputBox.Text;
+        }
+
+        public static dynamic showBookmarkEditDialog(string url, string caption, string name = "My Bookmark")
+        {
+
+            // Setup dialog box
+            Form prompt = new Form();
+            prompt.Width = 500;
+            prompt.Height = 200;
+            prompt.Text = caption;
+            Label textLabel = new Label() { Left = 50, Top = 20, Text = caption };
+            TextBox nameInputBox = new TextBox() { Left = 50, Top = 50, Width = 400 };
+            TextBox urlInputBox = new TextBox() { Left = 50, Top = 70, Width = 400 };
+            Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 90 };
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            urlInputBox.Text = url;
+            nameInputBox.Text = name;
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.Controls.Add(nameInputBox);
+            prompt.Controls.Add(urlInputBox);
+            prompt.ShowDialog();
+            dynamic bookmarkItem = new Newtonsoft.Json.Linq.JObject();
+            bookmarkItem.name = nameInputBox.Text;
+            bookmarkItem.url = urlInputBox.Text;
+            if(bookmarkItem.name == "")
+            {
+                bookmarkItem.name = name;
+            }
+            if (bookmarkItem.url == "")
+            {
+                bookmarkItem.name = url;
+            }
+            return bookmarkItem;
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Enter)
+            {
+                buttonGO.PerformClick();
+            }
+
+            if(e.KeyCode == Keys.Enter && e.Modifiers == Keys.Control)
+            {
+                buttonAddTab.PerformClick();
+                buttonGO.PerformClick();
+            }
         }
     }
 }
