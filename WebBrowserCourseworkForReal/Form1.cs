@@ -15,199 +15,45 @@ namespace WebBrowserCourseworkForReal
 {
     public partial class Form1 : Form
     {
-        // Setup the userdata variable which will have homepage, bookmarks and history
+        // This variable holds the C# Object converted from the JSON. Please check the JSON schema to know the structure of this variable.
         static dynamic userdata;
+
+        // This variable is used to track the current index the user is at in the userdata.history list
         static int userPosition;
 
+        /*
+         *  From1 is a constructer responsible for the follwing:
+         *  1. Calls initalize component from From1.Designer.cs
+         *  2. Check if file exists for userdata.json, which contains all user settings for the browser
+         *  2.1 Create and write to file if file doesn't exists
+         *  2.2 Read json data to the userdata variable
+         *  3. Load up homepage
+         *  
+         */
         public Form1()
         {
             InitializeComponent();
 
-            // Check if file exists for userdata.json, which contains all user settings for the browser
             if (!File.Exists("userdata.json"))
             {
-                // Create and write to file if file doesn't exists 
                 File.WriteAllText("userdata.json", "{\"homepage\":\"http://www.google.com\",\"bookmarks\":[],\"history\":[]}");
             }
             
             using (StreamReader r = new StreamReader("userdata.json"))
             {
-                // Read json data to the userdata variable
                 string jsonText = r.ReadToEnd();
                 r.Close();
                 userdata = JsonConvert.DeserializeObject(jsonText);
                 userPosition = userdata.history.Count - 1;
             }
 
-            // Load up homepage
             textBoxURL.Text = userdata.homepage;
-            
         }
 
-        private void editToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private async void loadResponseToTextBoxFromURL(bool recordToHistory)
-        {
-            // Check if valid URI
-            Uri uriResult;
-            bool isUri = Uri.TryCreate(textBoxURL.Text, UriKind.Absolute, out uriResult)
-                && uriResult.Scheme == Uri.UriSchemeHttp;
-
-            RichTextBox selectedRichTextBox;
-
-            // Get the 0th control (it is suppose to be richTextBox) of the current Tab
-            if (tabControl1.TabCount > 0)
-            {
-                if (tabControl1.SelectedTab.Controls[0] is RichTextBox)
-                {
-                    selectedRichTextBox = (RichTextBox)tabControl1.SelectedTab.Controls[0];
-                }
-                else
-                {
-                    // If no rich text box is present
-                    MessageBox.Show("Please use a different tab");
-                    return;
-                }
-            }
-            else
-            {
-                // If no rich text box is present
-                MessageBox.Show("Please add a new tab");
-                return;
-            }
-
-            // Do Request if valid URI
-            if (isUri)
-            {
-
-                // Set up request object
-                var request = WebRequest.Create(textBoxURL.Text);
-                // HttpWebRequest request = (HttpWebRequest)WebRequest.Create(textBoxURL.Text);
-
-                selectedRichTextBox.Text = "Loading...";
-
-                HttpStatusCode responseStatusCode;
-
-                // Try getting response
-                try
-                {
-                    // Set current tab name to URL name
-                    tabControl1.SelectedTab.Text = textBoxURL.Text;
-
-                    // Setup response object
-                    var response = (HttpWebResponse)await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null);
-                    //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                    // Get the stream associated with the response.
-                    Stream receiveStream = response.GetResponseStream();
-
-                    // Pipes the stream to a higher level stream reader with the required encoding format. 
-                    StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8);
-
-                    // Get the status code
-                    responseStatusCode = response.StatusCode;
-
-                    // Send the stream to the RichTextBox1
-                    selectedRichTextBox.Text = "Response Code: " + (int)responseStatusCode + "\n-----------------\n" + readStream.ReadToEnd();
-                    updateStatusCode(response.StatusCode.ToString(), Color.Green);
-
-                    // Close response and stream
-                    response.Close();
-                    readStream.Close();
-
-                    // Record history
-                    if (recordToHistory)
-                    {
-                        if (userPosition != userdata.history.Count - 1 || userPosition != 0)
-                        {
-                            int j = userdata.history.Count;
-                            for (int i = userdata.history.Count - 1; i > userPosition; i--)
-                            {
-                                userdata.history[i].Remove();
-                            }
-                        }
-                        userdata.history.Add(textBoxURL.Text);
-                        if (userdata.history.Count == 1)
-                        {
-                            userPosition = 0;
-                        }
-                        else
-                        {
-                            userPosition += 1;
-                        }
-                    }
-
-                    // Update navigation buttons
-                    toggleNavitgationButtons();
-                }
-                catch (WebException ex)
-                {
-                    if (ex.Status == WebExceptionStatus.ProtocolError)
-                    {
-                        var response = ex.Response as HttpWebResponse;
-                        if (response != null)
-                        {
-                            selectedRichTextBox.Text = "Response Code: " + (int)response.StatusCode + "\n--------------\nUnable to make a valid HTTP request, please check the URL";
-                            updateStatusCode(response.StatusCode.ToString(), Color.Orange);
-                        }
-                        else
-                        {
-                            // no http status code available
-                            invalidHTTPResponse(selectedRichTextBox);
-                        }
-                    }
-                    else
-                    {
-                        // no http status code available
-                        invalidHTTPResponse(selectedRichTextBox);
-                    }
-                }
-            }
-            else
-            {
-                // In case URI is invalid
-                selectedRichTextBox.Text = "'" + textBoxURL.Text + "' is not a valid URL, Please enter a valid URL";
-                updateStatusCode("---", Color.Gray);
-            }
-
-        }
-
+        // Go button (next to URL Text box)
         private void button1_Click(object sender, EventArgs e)
         {
             loadResponseToTextBoxFromURL(true);
-        }
-
-        private void toggleNavitgationButtons()
-        {
-            if(userdata.history.Count <= 1)
-            {
-                goForwardToolStripMenuItem.Enabled = false;
-                goBackToolStripMenuItem.Enabled = false;
-            }else{
-                goForwardToolStripMenuItem.Enabled = userPosition == userdata.history.Count-1 ? false : true;
-                goBackToolStripMenuItem.Enabled = userPosition == 1 ? false : true;
-            }
-        }
-
-        private void invalidHTTPResponse(RichTextBox selectedRichTextBox)
-        {
-            // no http status code available
-            selectedRichTextBox.Text = "No Response Code\n--------------\nUnable to make a valid HTTP request, please check the URL";
-            updateStatusCode("---", Color.Gray);
-        }
-
-        private void updateStatusCode(string text, Color color)
-        {
-            labelStatusCode.Text = text;
-            labelStatusCode.ForeColor = color;
-        }
-
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void setAsHomePageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -221,35 +67,13 @@ namespace WebBrowserCourseworkForReal
             addWebPageTab(userdata.homepage.ToString(), false);
         }
 
-        private void addWebPageTab(string url, Boolean record, Boolean autoNav = true)
-        {
-            // Set the title
-            string title = url;
-
-            // Set up rich text box
-            RichTextBox richTextBoxTab = new RichTextBox();
-            richTextBoxTab.Location = new System.Drawing.Point(0, 0);
-            richTextBoxTab.Name = "richTextBoxTab" + (tabControl1.TabCount + 1).ToString();
-            richTextBoxTab.Size = new System.Drawing.Size(1179, 646);
-
-            // Add new tab
-            TabPage newTabPage = new TabPage(title);
-            tabControl1.TabPages.Add(newTabPage);
-
-            // Add controller
-            newTabPage.Controls.Add(richTextBoxTab);
-            tabControl1.SelectedTab = newTabPage;
-
-            // Auto-Navigate to url
-            textBoxURL.Text = url;
-            loadResponseToTextBoxFromURL(record);
-        }
-
+        // Remove tab button
         private void button2_Click(object sender, EventArgs e)
         {
             tabControl1.TabPages.Remove(tabControl1.SelectedTab);
         }
 
+        // On Web Browser close
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             JsonSerializer seralizer = new JsonSerializer();
@@ -425,6 +249,207 @@ namespace WebBrowserCourseworkForReal
             userdata.homepage = ShowEditDialog((string)userdata.homepage, "Edit Homepage");
         }
 
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Enter)
+            {
+                buttonGO.PerformClick();
+            }
+
+            if(e.KeyCode == Keys.Enter && e.Modifiers == Keys.Control)
+            {
+                buttonAddTab.PerformClick();
+                buttonGO.PerformClick();
+            }
+        }
+
+        // REUSABLE FUNCTIONS BELOW -- REUSABLE FUNCTIONS BELOW 
+
+        /*
+         * toggleNavigationButtons()
+         * This function is responsible for toggling (enable/disable) navigation buttons buttonForward and buttonBackward, based on the current position of the user in the history.
+         * 
+         * Parameters: None
+         * Returns: None
+         */
+        private void toggleNavigationButtons()
+        {
+            if (userdata.history.Count <= 1)
+            {
+                goForwardToolStripMenuItem.Enabled = false;
+                goBackToolStripMenuItem.Enabled = false;
+            }
+            else
+            {
+                goForwardToolStripMenuItem.Enabled = userPosition == userdata.history.Count - 1 ? false : true;
+                goBackToolStripMenuItem.Enabled = userPosition == 1 ? false : true;
+            }
+        }
+
+        /*
+         * This function is responsible for displaying an error message in a given RichTextBox control.
+         * 
+         * Parameters:
+         * selectedRichTextBox (RichTextBox) : The error message is displayed in the provided RichTextBox control
+         * Returns: None
+         */
+        private void invalidHTTPResponse(RichTextBox selectedRichTextBox)
+        {
+            // no http status code available
+            selectedRichTextBox.Text = "No Response Code\n--------------\nUnable to make a valid HTTP request, please check the URL";
+            updateStatusCode("---", Color.Gray);
+        }
+
+        /*
+         * updateStatusCode(string text, Color color)
+         * This function is responsible for updating the labelStatusCode to the given text and color. It is usually used to display the status code from HTTP response. 
+         * 
+         * Parameters:
+         * text (string) : The Text to display
+         * color (Color) : Color to set for the text
+         * Returns: None
+         */
+        private void updateStatusCode(string text, Color color)
+        {
+            labelStatusCode.Text = text;
+            labelStatusCode.ForeColor = color;
+        }
+
+        /*
+         * loadResponseToTextBoxFromURL(bool recordToHistory)
+         * This function is responsible for doing HTTP request and displaying the response in a richTextBox of a selected tab. Depending on the status of the request, this function will automatically update the text of the richTextBox (eg. Loading, success, invalid, etc).
+         * 
+         * Parameters:
+         * recordToHistory (bool) : On a successful response, should the URL be stored in userdata.history
+         * Returns: None
+         *
+         */
+        private async void loadResponseToTextBoxFromURL(bool recordToHistory)
+        {
+            Uri uriResult;
+            bool isUri = Uri.TryCreate(textBoxURL.Text, UriKind.Absolute, out uriResult)
+                && uriResult.Scheme == Uri.UriSchemeHttp;
+
+            RichTextBox selectedRichTextBox;
+
+            if (tabControl1.TabCount > 0)
+            {
+                if (tabControl1.SelectedTab.Controls[0] is RichTextBox)
+                {
+                    selectedRichTextBox = (RichTextBox)tabControl1.SelectedTab.Controls[0];
+                }
+                else
+                {
+                    MessageBox.Show("Please use a different tab");
+                    return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please add a new tab");
+                return;
+            }
+
+            if (isUri)
+            {
+                var request = WebRequest.Create(textBoxURL.Text);
+
+                selectedRichTextBox.Text = "Loading...";
+
+                HttpStatusCode responseStatusCode;
+
+                try
+                {
+                    // Set current tab name to URL name
+                    tabControl1.SelectedTab.Text = textBoxURL.Text;
+
+                    // Setup response object
+                    var response = (HttpWebResponse)await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null);
+
+                    // Get the stream associated with the response.
+                    Stream receiveStream = response.GetResponseStream();
+
+                    // Pipes the stream to a higher level stream reader with the required encoding format. 
+                    StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8);
+
+                    // Get the status code
+                    responseStatusCode = response.StatusCode;
+
+                    // Send the stream to the RichTextBox1
+                    selectedRichTextBox.Text = "Response Code: " + (int)responseStatusCode + "\n-----------------\n" + readStream.ReadToEnd();
+                    updateStatusCode(response.StatusCode.ToString(), Color.Green);
+
+                    // Close response and stream
+                    response.Close();
+                    readStream.Close();
+
+                    // Record history
+                    if (recordToHistory)
+                    {
+                        if (userPosition != userdata.history.Count - 1 || userPosition != 0)
+                        {
+                            int j = userdata.history.Count;
+                            for (int i = userdata.history.Count - 1; i > userPosition; i--)
+                            {
+                                userdata.history[i].Remove();
+                            }
+                        }
+                        userdata.history.Add(textBoxURL.Text);
+                        if (userdata.history.Count == 1)
+                        {
+                            userPosition = 0;
+                        }
+                        else
+                        {
+                            userPosition += 1;
+                        }
+                    }
+
+                    // Update navigation buttons
+                    toggleNavigationButtons();
+                }
+                catch (WebException ex)
+                {
+                    if (ex.Status == WebExceptionStatus.ProtocolError)
+                    {
+                        var response = ex.Response as HttpWebResponse;
+                        if (response != null)
+                        {
+                            selectedRichTextBox.Text = "Response Code: " + (int)response.StatusCode + "\n--------------\nUnable to make a valid HTTP request, please check the URL";
+                            updateStatusCode(response.StatusCode.ToString(), Color.Orange);
+                        }
+                        else
+                        {
+                            // no http status code available
+                            invalidHTTPResponse(selectedRichTextBox);
+                        }
+                    }
+                    else
+                    {
+                        // no http status code available
+                        invalidHTTPResponse(selectedRichTextBox);
+                    }
+                }
+            }
+            else
+            {
+                // In case URI is invalid
+                selectedRichTextBox.Text = "'" + textBoxURL.Text + "' is not a valid URL, Please enter a valid URL";
+                updateStatusCode("---", Color.Gray);
+            }
+
+        }
+
+        /*
+         * ShowEditDialog(string text, string caption)
+         * This function is responsible for displaying a Prompt with a caption which allows the user to edit the given text.The text is then returned by this function after the user has finished editing the text.Usually used for editing an item from the list (eg.History)
+         * 
+         * Parameters:
+         * text (string) : The Default text to load in the TextBox
+         * caption(string) : The text for the Label of the prompt
+         * 
+         * Returns: string
+         */
         public static string ShowEditDialog(string text, string caption)
         {
 
@@ -445,6 +470,17 @@ namespace WebBrowserCourseworkForReal
             return inputBox.Text;
         }
 
+        /*
+         * showBookmarkEditDialog(string url, string caption, string name = “My Bookmark”)
+         * This function is similar to ShowEditDialog function, but is used in a different context.It is usually used to allow the user to edit a bookmark item(which has a name and a url). This function is responsible for displaying a prompt with a label(caption) which allows the user to edit a url and name.
+         * 
+         * Parameters:
+         * url (string | required) : The URL to display in the first text box
+         * caption(string | require) : The text for the label
+         * name(string | optional) : The Name to display in the second text box(default is “My Bookmark”)
+         * 
+         * Returns: dynamic
+         */
         public static dynamic showBookmarkEditDialog(string url, string caption, string name = "My Bookmark")
         {
 
@@ -468,7 +504,7 @@ namespace WebBrowserCourseworkForReal
             dynamic bookmarkItem = new Newtonsoft.Json.Linq.JObject();
             bookmarkItem.name = nameInputBox.Text;
             bookmarkItem.url = urlInputBox.Text;
-            if(bookmarkItem.name == "")
+            if (bookmarkItem.name == "")
             {
                 bookmarkItem.name = name;
             }
@@ -479,18 +515,37 @@ namespace WebBrowserCourseworkForReal
             return bookmarkItem;
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        /*
+         * addWebPageTab(string url, Boolean record = false)
+         * This function is responsible for adding a new tab and loading a web address response inside the newly created tab’s RichTextBox.
+         * 
+         * Parameters:
+         * url (string | required) : The URL to load in the new tab
+         * record (boolean | optional) : Whether to add this URL in the history (Default is false)
+         * Returns: none
+         */
+        private void addWebPageTab(string url, Boolean record = false)
         {
-            if(e.KeyCode == Keys.Enter)
-            {
-                buttonGO.PerformClick();
-            }
+            // Set the title
+            string title = url;
 
-            if(e.KeyCode == Keys.Enter && e.Modifiers == Keys.Control)
-            {
-                buttonAddTab.PerformClick();
-                buttonGO.PerformClick();
-            }
+            // Set up rich text box
+            RichTextBox richTextBoxTab = new RichTextBox();
+            richTextBoxTab.Location = new System.Drawing.Point(0, 0);
+            richTextBoxTab.Name = "richTextBoxTab" + (tabControl1.TabCount + 1).ToString();
+            richTextBoxTab.Size = new System.Drawing.Size(1179, 646);
+
+            // Add new tab
+            TabPage newTabPage = new TabPage(title);
+            tabControl1.TabPages.Add(newTabPage);
+
+            // Add controller
+            newTabPage.Controls.Add(richTextBoxTab);
+            tabControl1.SelectedTab = newTabPage;
+
+            // Auto-Navigate to url
+            textBoxURL.Text = url;
+            loadResponseToTextBoxFromURL(record);
         }
     }
 }
