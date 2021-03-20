@@ -11,6 +11,7 @@ namespace WebBrowserCourseworkForReal
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+        /// Hola
         [STAThread]
         static void Main()
         {
