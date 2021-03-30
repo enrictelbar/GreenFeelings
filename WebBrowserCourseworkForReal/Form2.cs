@@ -25,9 +25,9 @@ namespace WebBrowserCourseworkForReal
         {
             ArrayList trees = new ArrayList();
             ArrayList markersList = new ArrayList();
-            trees.Add(new Tree("Arbol Grande", 39.4722, -0.376845, "Dueño", "Arbol grande en el centro de Valencia", "Calle ...", true));
-            trees.Add(new Tree("Arbol Mediano", 39.4712, -0.376875, "Dueño 2", "Arbol mediano en el centro de Valencia", "Plaza ...", true));
-            trees.Add(new Tree("Arbol Pequeño", 39.4702, -0.376805, "Dueño 3", "Arbol pequeño en el centro de Valencia", "Paseo ...", true));
+            trees.Add(new Tree(0, "Arbol Grande", 39.475383063453215, -0.3978636030402102, "Ms. Gwen", "Arbol grande en el centro de Valencia", "Rio de Valencia, Valencia, Spain", true));
+            trees.Add(new Tree(1, "Arbol Mediano", 39.4712, -0.376875, "Mr. Peter", "Arbol mediano en el centro de Valencia", "Plaza de la Mare de Deu, Valencia, Spain", true));
+            trees.Add(new Tree(2, "Arbol Pequeño", 39.471680668554924, -0.38815797923306555, "Alex", "Arbol pequeño en el centro de Valencia", "Paseo de los arboles, Valencia, Spain", true));
             InitializeComponent();
             gMap.ShowCenter = false;
             gMap.DragButton = MouseButtons.Left;
@@ -47,6 +47,7 @@ namespace WebBrowserCourseworkForReal
                 aux.ToolTip.Foreground = Brushes.White;
                 aux.ToolTip.Stroke = Pens.Black;
                 aux.ToolTip.TextPadding = new Size(15, 15);
+                aux.Tag = tr.getId();
                 markersList.Add(aux);
             }
             foreach (GMapMarker gmm in markersList)
@@ -58,7 +59,9 @@ namespace WebBrowserCourseworkForReal
         }
         private void gMap_OnMarkerClick(GMapMarker item, MouseEventArgs m)
         {
-            Console.WriteLine("Hola");
+            Console.WriteLine(item.Tag.ToString());
+            Form3 historial = new Form3(item.Tag.ToString());
+            historial.ShowDialog();
         }
     }
 }

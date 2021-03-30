@@ -8,6 +8,7 @@ namespace WebBrowserCourseworkForReal
 {
     class Tree
     {
+        private int id;
         private String name;
         private double latitude;
         private double longitude;
@@ -20,8 +21,9 @@ namespace WebBrowserCourseworkForReal
         /**
          * Constructor for tree
          */
-        public Tree(String name, double latitude, double longitude, String owner, String description, String address, bool owned)
+        public Tree(int id, String name, double latitude, double longitude, String owner, String description, String address, bool owned)
         {
+            this.id = id;
             this.name = name;
             this.latitude = latitude;
             this.longitude = longitude;
@@ -45,7 +47,10 @@ namespace WebBrowserCourseworkForReal
             this.owner = newOwner;
             return true;
         }
-
+        public int getId()
+        {
+            return this.id;
+        }
         public String getName()
         {
             return this.name;
